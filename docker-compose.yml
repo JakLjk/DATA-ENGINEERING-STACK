@@ -1,3 +1,5 @@
+
+
 services:
     hadoop-namenode:
       image: apache/hadoop:3.3.5
@@ -67,7 +69,6 @@ services:
         - ./configs/spark/.env.config
       entrypoint: ["/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077"]
 
-
     spark-history:
       image: apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
       container_name: spark-history
@@ -82,14 +83,9 @@ services:
         - "18080:18080"
       entrypoint: ["/opt/spark/sbin/start-history-server.sh"]
 
-        
-
       
-      
-
-
-
 volumes:
   hadoop_namenode:
   hadoop_datanode_1:
   hadoop_datanode_2:
+
