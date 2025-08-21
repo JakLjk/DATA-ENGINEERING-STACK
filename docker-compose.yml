@@ -1,0 +1,95 @@
+services:
+    hadoop-namenode:
+      image: apache/hadoop:3.3.5
+      container_name: hadoop-namenode
+      hostname: hadoop-namenode
+      user: root
+      volumes:
+        - hadoop_namenode:/opt/hadoop/data/namenode
+        - ./runfiles/hadoop/init-hdfs.sh:/init-hdfs.sh
+      env_file:
+        - ./configs/hadoop/.env.config
+      ports:
+        - 9870:9870
+      command: ["/bin/bash", "/init-hdfs.sh"]
+
+    hadoop-datanode-1:
+      image: apache/hadoop:3.3.5
+      container_name: hadoop-datanode-1
+      depends_on: ["hadoop-namenode"]
+      hostname: hadoop-datanode-1
+      user: root
+      environment:
+        - HADOOP_HOME=/opt/hadoop
+      volumes:
+        - hadoop_datanode_1:/opt/hadoop/data/datanode
+        - ./runfiles/hadoop/init-datanode.sh:/init-datanode.sh
+      env_file:
+        - ./configs/hadoop/.env.config 
+      command: ["/bin/bash", "/init-datanode.sh"]
+
+    hadoop-datanode-2:
+      image: apache/hadoop:3.3.5
+      container_name: hadoop-datanode-2
+      depends_on: ["hadoop-namenode"]
+      hostname: hadoop-datanode-2
+      user: root
+      volumes:
+        - hadoop_datanode_2:/opt/hadoop/data/datanode
+        - ./runfiles/hadoop/init-datanode.sh:/init-datanode.sh
+      env_file:
+        - ./configs/hadoop/.env.config 
+      command: ["/bin/bash", "/init-datanode.sh"]
+
+    spark-master:
+      image: apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
+      container_name: spark-master
+      # depends_on: ["hadoop-namenode"]
+      hostname: spark-master
+      user: root
+      volumes:
+        - ./configs/spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      env_file:
+        - ./configs/spark/.env.config
+      ports:
+        - '8080:8080'
+        - '7077:7077'
+      entrypoint: ["/opt/spark/sbin/start-master.sh"]
+
+    spark-worker:
+      image: apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
+      depends_on: ["spark-master"]
+      hostname: spark-worker
+      user: root
+      volumes:
+        - ./configs/spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      env_file:
+        - ./configs/spark/.env.config
+      entrypoint: ["/opt/spark/sbin/start-worker.sh", "spark://spark-master:7077"]
+
+
+    spark-history:
+      image: apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
+      container_name: spark-history
+      depends_on: ["spark-master"]
+      hostname: spark-history
+      user: root
+      volumes:
+        - ./configs/spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
+      env_file:
+        - ./configs/spark/.env.config
+      ports:
+        - "18080:18080"
+      entrypoint: ["/opt/spark/sbin/start-history-server.sh"]
+
+        
+
+      
+      
+
+
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode_1:
+  hadoop_datanode_2:
