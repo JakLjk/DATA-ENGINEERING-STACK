@@ -15,7 +15,7 @@ create-spark-fs: run-hadoop
 run-spark: create-spark-fs
 	docker compose up -d spark-master spark-worker spark-history --scale spark-worker=2
 
-run-stack: run-spark
+run: run-spark
 	@echo "-------------UI Access-------------"
 	@echo "Hadoop NN UI:   http://localhost:9870"
 	@echo "Spark Master:   http://localhost:8080"
@@ -23,6 +23,9 @@ run-stack: run-spark
 
 down: 
 	docker compose down
+
+down-clean: 
+	docker compose down --volumes --remove-orphans
 
 dev-hdfs-bash:
 	docker exec -it hadoop-namenode bash
